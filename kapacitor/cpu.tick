@@ -1,0 +1,74 @@
+dbrp "sandboxav"."sandboxav"
+
+var name = 'cpu'
+
+var idVar = name
+
+var message = '{{ index .Tags "host" }} - {{.Level}} - {{.Time}}'
+
+var idTag = 'alertID'
+
+var levelTag = 'level'
+
+var messageField = 'message'
+
+var durationField = 'duration'
+
+var triggerType = 'threshold'
+
+var details = '''<!DOCTYPE html>
+<html>
+<head>
+<title>===== Cpu Alert =====</title>
+</head>
+<body>
+<h1 style="color:red;"> CPU Usage Alert </h1>
+<p> CPU usage alert. </p>
+<h2>Tags</h2>
+<p> host: {{ index .Tags "host" }} </p>
+<h2>Fields</h2>
+<p> cpu usage: {{ index .Fields "total" }}% </p>
+</body>
+</html>'''
+
+var period = 5m
+var every = 5m
+
+var warn = 90
+var crit = 95
+
+var infoSig = 2.5
+var warnSig = 3
+var critSig = 3.5
+
+var data = batch
+    |query('''
+        select 100 - mean(usage_idle) as total
+        from "sandboxav"."sandboxav"."cpu"
+        where cpu = 'cpu-total'
+    ''')
+        .period(period)
+        .every(every)
+        .groupBy('host', time(1m))
+        .align()
+        .alignGroup()
+
+var alert = data
+    |eval(lambda: sigma("total"))
+        .as('sigma')
+        .keep()
+
+var trigger = alert
+    |alert()
+        .warn(lambda: "total" > warn)
+        .crit(lambda: "total" > crit)
+        .message(message)
+        .details(details)
+        .id(idVar)
+        .idTag(idTag)
+        .levelTag(levelTag)
+        .messageField(messageField)
+        .durationField(durationField)
+        .stateChangesOnly()
+        .all()
+        .topic('system')

@@ -1,0 +1,73 @@
+dbrp "sandboxav"."sandboxav"
+
+var name = 'rabbitmqConsumer'
+
+var idVar = name
+
+var message = '{{ index .Tags "url" }} - {{.Level}} - {{.Time}}'
+
+var idTag = 'alertID'
+
+var levelTag = 'level'
+
+var messageField = 'message'
+
+var durationField = 'duration'
+
+var details = '''<!DOCTYPE html>
+<html>
+<head>
+<title>===== RabbitMQ Consumer Alert =====</title>
+</head>
+<body>
+<h1 style="color:red;"> RabbitMQ Consumer Alert </h1>
+<p> Rabbitmq consumers have changed. </p>
+<h2>Tags</h2>
+<p> MQ url: {{ index .Tags "url" }} </p>
+<h2>Fields</h2>
+<p> current 3m avg: {{ index .Fields "current.value" }} </p>
+<p> last 3m avg: {{ index .Fields "past.value" }} </p>
+</body>
+</html>'''
+
+var shift = 3m
+var period = 3m
+var every = 3m
+
+var crit = 0
+
+var data = batch
+    |query('''
+        select mean(consumers) as consumers
+        from "sandboxav"."sandboxav"."rabbitmq_overview"
+    ''')
+        .period(period)
+        .every(every)
+        .groupBy('url', time(3m))
+        .align()
+        .alignGroup()
+    |eval(lambda: "consumers")
+        .as('value')
+
+var past = data
+    |shift(shift)
+
+var current = data
+
+var trigger = past
+    |join(current)
+        .as('past', 'current')
+    |eval(lambda: float("current.value" - "past.value"))
+        .keep()
+        .as('value')
+    |alert()
+        .crit(lambda: "value" != crit)
+        .message(message)
+        .details(details)
+        .id(idVar)
+        .idTag(idTag)
+        .levelTag(levelTag)
+        .messageField(messageField)
+        .durationField(durationField)
+        .noRecoveries()
+        .topic('rabbitmq')

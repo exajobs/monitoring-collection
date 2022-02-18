@@ -1,0 +1,63 @@
+dbrp "sandboxav"."sandboxav"
+
+var name = 'capProcess'
+
+var idVar = name
+
+var message = '{{ index .Tags "host" }} - {{.Level}} - {{.Time}}'
+
+var idTag = 'alertID'
+
+var levelTag = 'level'
+
+var messageField = 'message'
+
+var durationField = 'duration'
+
+var triggerType = 'threshold'
+
+var details = '''<!DOCTYPE html>
+<html>
+<head>
+<title>===== CaptureATP Process Alert =====</title>
+</head>
+<body>
+<h1 style="color:red;"> CaptureATP Process Status Alert </h1>
+<p> sandboxav daemon down. </p>
+<h2>Tags</h2>
+<p> host: {{ index .Tags "host" }} </p>
+<p> process: {{ index .Tags "keyword" }} </p>
+<h2>Fields</h2>
+<p> process number: {{ index .Fields "number" }} </p>
+</body>
+</html>'''
+
+var period = 1m
+var every = 1m
+
+var crit = 1
+
+var data = batch
+    |query('''
+        select number
+        from "sandboxav"."sandboxav"."maf_process"
+        where keyword = 'sandboxmain.py'
+    ''')
+        .period(period)
+        .every(every)
+        .groupBy('host', 'keyword')
+        .align()
+        .alignGroup()
+
+var trigger = data
+    |alert()
+        .crit(lambda: "number" < crit)
+        .message(message)
+        .details(details)
+        .id(idVar)
+        .idTag(idTag)
+        .levelTag(levelTag)
+        .messageField(messageField)
+        .durationField(durationField)
+        .stateChangesOnly()
+        .topic('sandboxav')

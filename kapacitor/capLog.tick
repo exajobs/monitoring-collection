@@ -1,0 +1,59 @@
+dbrp "sandboxav"."sandboxav"
+
+var name = 'capLog'
+
+var idVar = name
+
+var message = '{{ index .Tags "host" }} - {{.Level}} - {{.Time}}'
+
+var idTag = 'alertID'
+
+var levelTag = 'level'
+
+var messageField = 'message'
+
+var durationField = 'duration'
+
+var triggerType = 'threshold'
+
+var details = '''<!DOCTYPE html>
+<html>
+<head>
+<title>===== CaptureATP log status =====</title>
+</head>
+<body>
+<h1 style="color:red;"> CaptureATP Log Status Alert </h1>
+<p> /opt/sandboxav/logs/appliance.log not up-to-date. </p>
+<h2>Tags</h2>
+<p> host: {{ index .Tags "host" }} </p>
+</body>
+</html>'''
+
+var period = 1m
+var every = 1m
+
+var crit = 1
+
+var data = batch
+    |query('''
+        select count
+        from "sandboxav"."sandboxav"."filecount"
+    ''')
+        .period(period)
+        .every(every)
+        .groupBy('host')
+        .align()
+        .alignGroup()
+
+var trigger = data
+    |alert()
+        .crit(lambda: "count" < crit)
+        .message(message)
+        .details(details)
+        .id(idVar)
+        .idTag(idTag)
+        .levelTag(levelTag)
+        .messageField(messageField)
+        .durationField(durationField)
+        .stateChangesOnly()
+        .topic('sandboxav')
