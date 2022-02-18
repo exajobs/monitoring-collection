@@ -4,7 +4,7 @@
 
 ## `What is Monitoring?`
 
-## Table of Contents
+## `Table of Contents`
 
 * [Monitoring](#monitoring)
     * [Nagios](#nagios)
@@ -125,7 +125,7 @@ Monitoring tools based on nagios.
 * [Naemon](http://www.naemon.org/) - Networks, Applications and Event Monitor.
 * [Naemon core github](https://github.com/naemon/naemon-core) - Next generation of nagios core written in C.
 
-### Shinken
+### `Shinken`
 
 > Shinken is a monitoring framework. It's a Python Nagios® Core total rewrite enhancing flexibility and large environment management.
 
@@ -133,7 +133,7 @@ Monitoring tools based on nagios.
 * [Shinken core github](https://github.com/naparuba/shinken) - Shinken core written in Python.
 * [Shinken exchange github](https://github.com/shinken-monitoring) - Shinken exchange.
 
-### Centreon
+### `Centreon`
 
 > Centreon is a network, system, applicative supervision and monitoring tool.
 
@@ -141,14 +141,14 @@ Monitoring tools based on nagios.
 * [Centreon core github](https://github.com/centreon/centreon-engine) - Centreon core written in C++.
 * [Centreon plugins github](https://github.com/centreon/centreon-plugins) - Centreon plugins.
 
-### Opsview
+### `Opsview`
 
 > Powerful monitoring for IT networks large and small, visualize all aspects of your IT at a glance.
 
 * [Opsview](https://www.opsview.com/) - Comprehensive coverage, rapid resolution, elegant visualization.
 * [Opsview core](https://www.openhub.net/p/opsview) - Opsview core written in Perl.
 
-### check_mk
+### `check_mk`
 
 > Check_MK is comprehensive IT monitoring solution in the tradition of Nagios.
 
